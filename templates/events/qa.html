@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Q&A Board - {{ event.title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="flex justify-between items-start">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">Q&A Board</h1>
+                <h2 class="text-xl text-gray-600 mt-2">{{ event.title }}</h2>
+                <p class="text-gray-500 mt-1">{{ event.date|date:"F j, Y \a\t g:i A" }}</p>
+            </div>
+            <a href="{% url 'event_public_detail' event.id %}" class="btn btn-secondary">
+                Back to Event
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Questions List -->
+        <div class="lg:col-span-2">
+            <div class="card">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-semibold text-gray-900">
+                        Questions ({{ questions.count }})
+                    </h3>
+                    <div class="text-sm text-gray-500">
+                        Sorted by votes
+                    </div>
+                </div>
+
+                {% if questions %}
+                    <div class="space-y-4">
+                        {% for question in questions %}
+                        <div class="bg-gray-50 rounded-lg p-6 hover:bg-gray-100 transition-colors">
+                            <div class="flex items-start space-x-4">
+                                <!-- Vote Button -->
+                                <div class="flex flex-col items-center space-y-1">
+                                    <button onclick="voteQuestion({{ question.id }})" 
+                                            class="vote-btn flex flex-col items-center p-2 rounded-lg hover:bg-gray-200 transition-colors"
+                                            data-question-id="{{ question.id }}">
+                                        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                                        </svg>
+                                        <span class="vote-count text-sm font-semibold text-gray-700">{{ question.votes }}</span>
+                                    </button>
+                                </div>
+
+                                <!-- Question Content -->
+                                <div class="flex-1">
+                                    <p class="text-gray-900 font-medium mb-2">{{ question.question_text }}</p>
+                                    
+                                    <!-- Question Meta -->
+                                    <div class="flex items-center space-x-4 text-sm text-gray-500">
+                                        <span>{{ question.created_at|timesince }} ago</span>
+                                        {% if question.participant %}
+                                        <span>by {{ question.participant.first_name }}</span>
+                                        {% endif %}
+                                        {% if question.is_answered %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            ✓ Answered
+                                        </span>
+                                        {% endif %}
+                                    </div>
+
+                                    <!-- Answer -->
+                                    {% if question.is_answered and question.answer %}
+                                    <div class="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                                        <div class="flex items-start space-x-2">
+                                            <svg class="w-5 h-5 text-green-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                            </svg>
+                                            <div>
+                                                <p class="text-green-900 font-medium">Answer:</p>
+                                                <p class="text-green-800 mt-1">{{ question.answer }}</p>
+                                                {% if question.answered_by and question.answered_at %}
+                                                <p class="text-green-600 text-sm mt-2">
+                                                    — {{ question.answered_by.name }}, {{ question.answered_at|timesince }} ago
+                                                </p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-12">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <h3 class="mt-2 text-sm font-medium text-gray-900">No questions yet</h3>
+                        <p class="mt-1 text-sm text-gray-500">Be the first to ask a question!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Submit Question Form -->
+        <div class="lg:col-span-1">
+            <div class="card sticky top-8">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Ask a Question</h3>
+                
+                <!-- Email verification for voting -->
+                <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p class="text-sm text-blue-800 mb-2">
+                        <strong>Registered participants only:</strong>
+                    </p>
+                    <input type="email" 
+                           id="participant-email" 
+                           placeholder="Your registered email"
+                           class="w-full px-3 py-2 border border-blue-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                           value="{{ participant.email|default:'' }}">
+                    <p class="text-xs text-blue-600 mt-1">
+                        Required for submitting questions and voting
+                    </p>
+                </div>
+
+                <form method="post" id="question-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="submit_question" value="1">
+                    <input type="hidden" name="email" id="form-email" value="{{ participant.email|default:'' }}">
+                    
+                    <div class="mb-4">
+                        <label for="id_question_text" class="block text-sm font-medium text-gray-700 mb-2">
+                            Your Question
+                        </label>
+                        <textarea id="id_question_text" 
+                                  name="question_text" 
+                                  rows="4" 
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                  placeholder="What would you like to know?"
+                                  required></textarea>
+                    </div>
+                    
+                    <button type="submit" class="w-full btn btn-primary">
+                        Submit Question
+                    </button>
+                </form>
+
+                <div class="mt-6 text-sm text-gray-600">
+                    <h4 class="font-medium text-gray-900 mb-2">Guidelines:</h4>
+                    <ul class="space-y-1 text-sm">
+                        <li>• Keep questions clear and concise</li>
+                        <li>• Vote for questions you find interesting</li>
+                        <li>• Avoid duplicate questions</li>
+                        <li>• Be respectful and professional</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Update form email when participant email changes
+document.getElementById('participant-email').addEventListener('input', function() {
+    document.getElementById('form-email').value = this.value;
+});
+
+// Vote on question
+function voteQuestion(questionId) {
+    const email = document.getElementById('participant-email').value;
+    
+    if (!email) {
+        alert('Please enter your registered email address to vote.');
+        return;
+    }
+    
+    fetch(`/vote/${questionId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: `email=${encodeURIComponent(email)}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert(data.error);
+        } else {
+            // Update vote count
+            const voteButton = document.querySelector(`[data-question-id="${questionId}"]`);
+            const voteCount = voteButton.querySelector('.vote-count');
+            voteCount.textContent = data.votes;
+            
+            // Visual feedback
+            if (data.voted) {
+                voteButton.classList.add('bg-primary-100');
+                voteButton.querySelector('svg').classList.add('text-primary-600');
+            } else {
+                voteButton.classList.remove('bg-primary-100');
+                voteButton.querySelector('svg').classList.remove('text-primary-600');
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Something went wrong. Please try again.');
+    });
+}
+
+// Auto-refresh questions every 30 seconds
+setInterval(() => {
+    location.reload();
+}, 30000);
+</script>
+{% endblock %}

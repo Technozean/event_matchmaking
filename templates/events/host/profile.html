@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Host Profile - Event Matchmaking Platform{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Host Profile</h1>
+        <p class="mt-2 text-lg text-gray-600">Manage your profile information and preferences.</p>
+    </div>
+
+    <div class="card">
+        <form method="post">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <div class="mt-6">
+                <button type="submit" class="btn btn-primary">
+                    Update Profile
+                </button>
+                <a href="{% url 'host_dashboard' %}" class="btn btn-secondary ml-3">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

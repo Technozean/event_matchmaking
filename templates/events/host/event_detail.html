@@ -1,0 +1,254 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ event.title }} - Event Matchmaking Platform{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="flex justify-between items-start">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">{{ event.title }}</h1>
+                <p class="mt-2 text-lg text-gray-600">{{ event.description }}</p>
+                <div class="mt-4 flex items-center space-x-6 text-sm text-gray-500">
+                    <div class="flex items-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        {{ event.date|date:"M j, Y \a\t g:i A" }}
+                    </div>
+                    {% if event.location %}
+                    <div class="flex items-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                        {{ event.location }}
+                    </div>
+                    {% endif %}
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                        {% if event.status == 'published' %}bg-green-100 text-green-800
+                        {% elif event.status == 'draft' %}bg-yellow-100 text-yellow-800
+                        {% elif event.status == 'completed' %}bg-blue-100 text-blue-800
+                        {% else %}bg-gray-100 text-gray-800{% endif %}">
+                        {{ event.get_status_display }}
+                    </span>
+                </div>
+            </div>
+            
+            <div class="flex space-x-3">
+                <a href="{% url 'edit_event' event.id %}" class="btn btn-secondary">Edit Event</a>
+                <a href="{% url 'manage_questions' event.id %}" class="btn btn-secondary">Manage Questions</a>
+                {% if event.status == 'draft' %}
+                <form method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="publish">
+                    <button type="submit" class="btn btn-primary" onclick="return confirm('Are you sure you want to publish this event? It will be visible to the public and participants can register.')">
+                        Publish Event
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="card">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-blue-100">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-sm font-medium text-gray-500">Registered</h3>
+                    <p class="text-2xl font-bold text-blue-600">{{ event.participant_count }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-yellow-100">
+                    <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-sm font-medium text-gray-500">Waitlisted</h3>
+                    <p class="text-2xl font-bold text-yellow-600">{{ event.waitlist_count }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-green-100">
+                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"></path>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-sm font-medium text-gray-500">Matches Made</h3>
+                    <p class="text-2xl font-bold text-green-600">0</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-purple-100">
+                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-sm font-medium text-gray-500">Questions</h3>
+                    <p class="text-2xl font-bold text-purple-600">{{ public_questions.count }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR Code and Registration Link -->
+    {% if event.status == 'published' %}
+    <div class="card mb-8">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4">Registration & Promotion</h2>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">Registration Link</h3>
+                <div class="flex items-center space-x-2">
+                    <input type="text" 
+                           value="{{ request.scheme }}://{{ request.get_host }}{% url 'event_registration' event.id %}"
+                           class="form-input flex-1 text-sm"
+                           readonly
+                           id="registration-link">
+                    <button onclick="copyToClipboard('registration-link')" class="btn btn-secondary text-sm">Copy</button>
+                </div>
+                <p class="text-sm text-gray-500 mt-2">Share this link to allow participants to register</p>
+            </div>
+            
+            {% if event.qr_code %}
+            <div>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">QR Code</h3>
+                <div class="flex items-center space-x-4">
+                    <img src="{{ event.qr_code.url }}" alt="QR Code" class="w-24 h-24 border border-gray-200 rounded">
+                    <div>
+                        <p class="text-sm text-gray-600 mb-2">Download and print this QR code for easy registration</p>
+                        <a href="{{ event.qr_code.url }}" download="qr-code-{{ event.title|slugify }}.png" class="btn btn-secondary text-sm">Download QR Code</a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Participants -->
+        <div>
+            <div class="card">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-semibold text-gray-900">Participants</h2>
+                    <span class="text-sm text-gray-500">{{ participants.count }} total</span>
+                </div>
+                
+                {% if participants %}
+                    <div class="space-y-4">
+                        {% for participant in participants|slice:":10" %}
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <div>
+                                <h4 class="font-medium text-gray-900">{{ participant.full_name }}</h4>
+                                <p class="text-sm text-gray-600">{{ participant.email }}</p>
+                                {% if participant.role %}
+                                <p class="text-sm text-gray-500">{{ participant.role }} {% if participant.company %}at {{ participant.company }}{% endif %}</p>
+                                {% endif %}
+                            </div>
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full
+                                {% if participant.status == 'registered' %}bg-green-100 text-green-800
+                                {% elif participant.status == 'waitlisted' %}bg-yellow-100 text-yellow-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ participant.get_status_display }}
+                            </span>
+                        </div>
+                        {% endfor %}
+                        
+                        {% if participants.count > 10 %}
+                        <div class="text-center">
+                            <button class="text-primary-600 hover:text-primary-800 text-sm font-medium">
+                                View all {{ participants.count }} participants
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-8">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                        <h3 class="mt-2 text-sm font-medium text-gray-900">No participants yet</h3>
+                        <p class="mt-1 text-sm text-gray-500">Share your registration link to get started.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Q&A -->
+        <div>
+            <div class="card">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-semibold text-gray-900">Recent Questions</h2>
+                    {% if event.enable_qa %}
+                    <a href="{% url 'event_qa' event.id %}" class="text-sm text-primary-600 hover:text-primary-800">View Q&A Board</a>
+                    {% endif %}
+                </div>
+                
+                {% if public_questions %}
+                    <div class="space-y-4">
+                        {% for question in public_questions %}
+                        <div class="p-4 bg-gray-50 rounded-lg">
+                            <p class="text-gray-900">{{ question.question_text }}</p>
+                            <div class="mt-2 flex items-center text-sm text-gray-500">
+                                <span class="flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                                    </svg>
+                                    {{ question.votes }} votes
+                                </span>
+                                <span class="ml-4">{{ question.created_at|timesince }} ago</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-8">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <h3 class="mt-2 text-sm font-medium text-gray-900">No questions yet</h3>
+                        <p class="mt-1 text-sm text-gray-500">{% if not event.enable_qa %}Q&A is disabled for this event.{% else %}Questions will appear here during the event.{% endif %}</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyToClipboard(elementId) {
+    const element = document.getElementById(elementId);
+    element.select();
+    element.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(element.value);
+    
+    // Show feedback
+    const button = element.nextElementSibling;
+    const originalText = button.textContent;
+    button.textContent = 'Copied!';
+    setTimeout(() => {
+        button.textContent = originalText;
+    }, 2000);
+}
+</script>
+{% endblock %}

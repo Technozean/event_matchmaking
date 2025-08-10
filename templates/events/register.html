@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Register for {{ event.title }} - Event Matchmaking Platform{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Event Info Header -->
+    <div class="bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-lg p-8 mb-8">
+        <h1 class="text-3xl font-bold mb-4">{{ event.title }}</h1>
+        <p class="text-primary-100 mb-4">{{ event.description }}</p>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+            <div class="flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                {{ event.date|date:"M j, Y \a\t g:i A" }}
+            </div>
+            {% if event.location %}
+            <div class="flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+                {{ event.location }}
+            </div>
+            {% endif %}
+            <div class="flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                </svg>
+                {{ event.participant_count }} registered{% if event.max_participants %} / {{ event.max_participants }}{% endif %}
+            </div>
+        </div>
+
+        <!-- Event Status -->
+        {% if is_full %}
+        <div class="mt-4 p-3 bg-yellow-500 bg-opacity-20 rounded border border-yellow-300 border-opacity-30">
+            <div class="flex items-center">
+                <svg class="w-5 h-5 mr-2 text-yellow-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                </svg>
+                <span class="font-medium">This event is full! {% if event.allow_waitlist %}You can join the waitlist.{% endif %}</span>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Registration Form -->
+        <div class="lg:col-span-2">
+            <div class="card">
+                <h2 class="text-2xl font-semibold text-gray-900 mb-6">
+                    {% if is_full and event.allow_waitlist %}
+                        Join Waitlist for {{ event.title }}
+                    {% else %}
+                        Register for {{ event.title }}
+                    {% endif %}
+                </h2>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <div class="mt-8">
+                        <button type="submit" class="w-full btn btn-primary">
+                            {% if is_full and event.allow_waitlist %}
+                                Join Waitlist
+                            {% else %}
+                                Register for Event
+                            {% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Event Features & Info -->
+        <div class="lg:col-span-1">
+            <div class="card mb-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">What to Expect</h3>
+                <div class="space-y-3 text-sm">
+                    {% if event.enable_matchmaking %}
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mr-3 mt-0.5">
+                            <svg class="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-900">AI-Powered Matchmaking</h4>
+                            <p class="text-gray-600">Get matched with attendees who share your interests and background</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if event.enable_qa %}
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mr-3 mt-0.5">
+                            <svg class="w-3 h-3 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-900">Interactive Q&A</h4>
+                            <p class="text-gray-600">Ask questions and vote on the most important topics</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center mr-3 mt-0.5">
+                            <svg class="w-3 h-3 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-900">Networking Opportunities</h4>
+                            <p class="text-gray-600">Connect with like-minded professionals in your field</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 w-6 h-6 bg-yellow-100 rounded-full flex items-center justify-center mr-3 mt-0.5">
+                            <svg class="w-3 h-3 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-900">Valuable Insights</h4>
+                            <p class="text-gray-600">Learn about attendee backgrounds and industry trends</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if event.host %}
+            <div class="card">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Event Host</h3>
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mr-4">
+                        <span class="text-lg font-semibold text-primary-600">
+                            {{ event.host.name|first|upper }}
+                        </span>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-900">{{ event.host.name }}</h4>
+                        {% if event.host.organization %}
+                        <p class="text-sm text-gray-600">{{ event.host.organization }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if event.registration_deadline %}
+            <div class="card bg-red-50 border-red-200">
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <div>
+                        <h4 class="font-medium text-red-900">Registration Deadline</h4>
+                        <p class="text-sm text-red-700">{{ event.registration_deadline|date:"M j, Y \a\t g:i A" }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

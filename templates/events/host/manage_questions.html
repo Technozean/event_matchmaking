@@ -1,0 +1,242 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Manage Questions - {{ event.title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="flex justify-between items-start">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">Manage Registration Questions</h1>
+                <h2 class="text-xl text-gray-600 mt-2">{{ event.title }}</h2>
+                <p class="text-gray-500 mt-1">Customize the registration form for your event</p>
+            </div>
+            <a href="{% url 'event_detail' event.id %}" class="btn btn-secondary">
+                Back to Event
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Add New Question -->
+        <div>
+            <div class="card">
+                <h3 class="text-xl font-semibold text-gray-900 mb-6">Add New Question</h3>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <div class="mt-6">
+                        <button type="submit" class="btn btn-primary">
+                            Add Question
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Quick Templates -->
+            <div class="card mt-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Add Templates</h3>
+                <div class="space-y-2">
+                    <button onclick="addQuickQuestion('skills')" class="w-full text-left px-4 py-2 bg-gray-50 hover:bg-gray-100 rounded-lg text-sm transition-colors">
+                        <strong>Skills & Technologies:</strong> Multiple choice for technical skills
+                    </button>
+                    <button onclick="addQuickQuestion('role')" class="w-full text-left px-4 py-2 bg-gray-50 hover:bg-gray-100 rounded-lg text-sm transition-colors">
+                        <strong>Job Role:</strong> Current position or title
+                    </button>
+                    <button onclick="addQuickQuestion('company')" class="w-full text-left px-4 py-2 bg-gray-50 hover:bg-gray-100 rounded-lg text-sm transition-colors">
+                        <strong>Company:</strong> Current organization
+                    </button>
+                    <button onclick="addQuickQuestion('experience')" class="w-full text-left px-4 py-2 bg-gray-50 hover:bg-gray-100 rounded-lg text-sm transition-colors">
+                        <strong>Years of Experience:</strong> Professional experience level
+                    </button>
+                    <button onclick="addQuickQuestion('interests')" class="w-full text-left px-4 py-2 bg-gray-50 hover:bg-gray-100 rounded-lg text-sm transition-colors">
+                        <strong>Interests:</strong> Networking and learning interests
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Current Questions -->
+        <div>
+            <div class="card">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-semibold text-gray-900">Current Questions ({{ questions.count }})</h3>
+                    <span class="text-sm text-gray-500">Drag to reorder</span>
+                </div>
+
+                {% if questions %}
+                    <div class="space-y-4" id="questions-list">
+                        {% for question in questions %}
+                        <div class="bg-gray-50 rounded-lg p-4 border-l-4 
+                            {% if question.is_mandatory %}border-red-400{% else %}border-gray-300{% endif %}"
+                             data-question-id="{{ question.id }}">
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <div class="flex items-center space-x-2 mb-2">
+                                        <span class="text-sm font-medium text-gray-500">Order: {{ question.order }}</span>
+                                        {% if question.is_mandatory %}
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                                            Required
+                                        </span>
+                                        {% endif %}
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                            {{ question.get_question_type_display }}
+                                        </span>
+                                        {% if question.maps_to_field %}
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                            Maps to: {{ question.maps_to_field }}
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <h4 class="font-medium text-gray-900 mb-2">{{ question.question_text }}</h4>
+                                    
+                                    {% if question.choices %}
+                                    <div class="text-sm text-gray-600">
+                                        <strong>Choices:</strong> {{ question.choices|truncatechars:100 }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="flex space-x-2 ml-4">
+                                    <button onclick="editQuestion({{ question.id }})" 
+                                            class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                        Edit
+                                    </button>
+                                    <button onclick="deleteQuestion({{ question.id }})" 
+                                            class="text-red-600 hover:text-red-800 text-sm font-medium">
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-12">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <h3 class="mt-2 text-sm font-medium text-gray-900">No custom questions</h3>
+                        <p class="mt-1 text-sm text-gray-500">
+                            {% if event.template %}
+                                Using template questions from {{ event.template.name }}
+                            {% else %}
+                                Add custom questions to collect specific information from participants.
+                            {% endif %}
+                        </p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Tips -->
+            <div class="card mt-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">💡 Question Tips</h3>
+                <div class="space-y-3 text-sm text-gray-600">
+                    <div>
+                        <h4 class="font-medium text-gray-900">Field Mapping</h4>
+                        <p>Map questions to predefined fields (skills, role, industry, etc.) to enable AI matchmaking and analytics.</p>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-medium text-gray-900">Question Types</h4>
+                        <ul class="list-disc list-inside mt-1 space-y-1">
+                            <li><strong>Multiple Choice:</strong> Single selection from options</li>
+                            <li><strong>Checkboxes:</strong> Multiple selections allowed</li>
+                            <li><strong>Short Text:</strong> Brief responses (name, company)</li>
+                            <li><strong>Long Text:</strong> Detailed answers (bio, goals)</li>
+                            <li><strong>Rating Scale:</strong> 1-5 numerical ratings</li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-medium text-gray-900">Best Practices</h4>
+                        <ul class="list-disc list-inside mt-1 space-y-1">
+                            <li>Keep questions clear and specific</li>
+                            <li>Use mandatory sparingly (only essential info)</li>
+                            <li>Provide relevant choices for multiple choice</li>
+                            <li>Order questions logically (basic info first)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Quick question templates
+const quickQuestions = {
+    skills: {
+        question_text: "What are your primary skills or technologies?",
+        question_type: "checkboxes",
+        choices: "Python,JavaScript,React,Node.js,Django,Flask,Machine Learning,Data Science,DevOps,Cloud Computing",
+        maps_to_field: "skills",
+        is_mandatory: true
+    },
+    role: {
+        question_text: "What is your current role?",
+        question_type: "multiple_choice",
+        choices: "Software Engineer,Senior Engineer,Tech Lead,Engineering Manager,Product Manager,Designer,Data Scientist,Other",
+        maps_to_field: "role",
+        is_mandatory: true
+    },
+    company: {
+        question_text: "What company do you work for?",
+        question_type: "short_text",
+        maps_to_field: "company",
+        is_mandatory: false
+    },
+    experience: {
+        question_text: "How many years of professional experience do you have?",
+        question_type: "multiple_choice",
+        choices: "0-1 years,1-3 years,3-5 years,5-8 years,8+ years",
+        maps_to_field: "experience_years",
+        is_mandatory: true
+    },
+    interests: {
+        question_text: "What topics interest you most for networking?",
+        question_type: "checkboxes",
+        choices: "Career Development,Technical Learning,Entrepreneurship,Leadership,Industry Trends,Mentorship",
+        maps_to_field: "interests",
+        is_mandatory: false
+    }
+};
+
+function addQuickQuestion(type) {
+    const template = quickQuestions[type];
+    
+    // Fill form fields
+    document.getElementById('id_question_text').value = template.question_text;
+    document.getElementById('id_question_type').value = template.question_type;
+    document.getElementById('id_choices').value = template.choices || '';
+    document.getElementById('id_maps_to_field').value = template.maps_to_field || '';
+    document.getElementById('id_is_mandatory').checked = template.is_mandatory;
+    
+    // Set next order number
+    const questionCount = document.querySelectorAll('[data-question-id]').length;
+    document.getElementById('id_order').value = questionCount + 1;
+    
+    // Scroll to form
+    document.getElementById('id_question_text').scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('id_question_text').focus();
+}
+
+function editQuestion(questionId) {
+    // This would open an edit modal or redirect to edit page
+    alert('Edit functionality would be implemented here');
+}
+
+function deleteQuestion(questionId) {
+    if (confirm('Are you sure you want to delete this question?')) {
+        // This would send a delete request
+        alert('Delete functionality would be implemented here');
+    }
+}
+
+// Make questions sortable (would require additional JavaScript library like Sortable.js)
+</script>
+{% endblock %}

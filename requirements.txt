@@ -1,0 +1,17 @@
+Django==5.2.5
+# Database connectors
+mysqlclient>=2.2.0
+# For QR code generation
+qrcode[pil]==7.4.2
+Pillow>=10.0.0
+# For OpenAI integration
+openai>=1.3.0
+# For API requests
+requests>=2.31.0
+# For forms and validation
+django-crispy-forms>=2.0
+crispy-bootstrap5>=0.7
+# For better development
+django-extensions>=3.2.0
+# For environment variables
+python-decouple>=3.8

@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Host Registration - Event Matchmaking Platform{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-2xl w-full space-y-8">
+        <div>
+            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                Create your host account
+            </h2>
+            <p class="mt-2 text-center text-sm text-gray-600">
+                Start hosting amazing networking events
+            </p>
+        </div>
+        
+        <div class="card">
+            <form method="post">
+                {% csrf_token %}
+                {{ form|crispy }}
+                <div class="mt-6">
+                    <button type="submit" class="w-full btn btn-primary">
+                        Create Host Account
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="text-center">
+            <p class="text-sm text-gray-600">
+                Already have an account?
+                <a href="{% url 'login' %}" class="font-medium text-primary-600 hover:text-primary-500">
+                    Sign in here
+                </a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
